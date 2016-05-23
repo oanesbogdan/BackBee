@@ -85,6 +85,10 @@ revision.onflush:
     listeners:
         - [BackBee\ClassContent\Listener\RevisionListener, onFlushElementFile]
 
+revision.postupdate:
+    listeners:
+        - [BackBee\ClassContent\Listener\RevisionListener, onPostUpdate]
+
 element.keyword.render:
     listeners:
         - [BackBee\Event\Listener\elementListener, onRender]

@@ -569,6 +569,12 @@ class ClassContentRepository extends EntityRepository
             $qb->limitToOnline();
         }
 
+        /* exclude contents from deleted pages */
+        $exludeDeletedPages = (array_key_exists('excludeDeletedPages', $cond) && is_bool($cond['excludeDeletedPages'])) ? $cond['excludeDeletedPages'] : true;
+        if ($exludeDeletedPages) {
+             $qb->excludeDeletedPages();
+        }
+
         /* filter by content id */
         if (array_key_exists('contentIds', $cond) && is_array($cond['contentIds']) && !empty($cond['contentIds'])) {
             $qb->addUidsFilter((array) $cond['contentIds']);

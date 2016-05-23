@@ -245,4 +245,59 @@ class RevisionListener
             }
         }
     }
+
+    /**
+     * Occurs on revision.onPostUpdate events.
+     *
+     * @param Event $event
+     */
+    public static function onPostUpdate(Event $event)
+    {
+        $revision = $event->getTarget();
+        $content = $revision->getContent();
+
+        if (!($content instanceof AbstractClassContent)) {
+            return;
+        }
+
+        $dispatcher = $event->getDispatcher();
+        $application = $dispatcher->getApplication();
+        $token = $application->getSecurityContext()->getToken();
+
+        if (!($token instanceof BBUserToken)) {
+            return;
+        }
+
+        $em = $application->getEntityManager();
+        $parents = $em->getRepository('BackBee\ClassContent\AbstractClassContent')->getParentContents($content);
+
+        if (count($parents) <= 0) {
+            return;
+        }
+
+        foreach ($parents as $contentEl) {
+            if (null !== $contentEl->getProperty('labelized-by')) {
+                $elements = explode('->', $contentEl->getProperty('labelized-by'));
+
+                if (!in_array(strtolower($revision->getLabel()), $elements)) {
+                    return;
+                }
+
+                $value = $contentEl;
+                foreach ($elements as $element) {
+                    if (null !== $value) {
+                        $value = $value->getData($element);
+                        if ($value instanceof AbstractClassContent && false === $em->contains($value)) {
+                            $value = $em->find(get_class($value), $value->getUid());
+                        }
+                    }
+                }
+
+                $statement = $em->getConnection()->prepare('UPDATE `content` SET `label` = :label WHERE `uid` = :uid');
+                $statement->bindValue('label', $value);
+                $statement->bindValue('uid', $contentEl->getUid());
+                $statement->execute();
+            }
+        }
+    }
 }

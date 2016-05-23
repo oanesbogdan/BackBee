@@ -718,6 +718,7 @@ class ClassContentController extends AbstractRestController
         ], $this->getRequest()->query->all());
 
         $criterias['only_online'] = (boolean) $criterias['only_online'];
+        $criterias['excludeDeletedPages'] = array_key_exists('excludeDeletedPages', $criterias) ? (boolean) $criterias['excludeDeletedPages'] : false;
 
         $order_infos = [
             'column'    => isset($criterias['order_by']) ? $criterias['order_by'] : '_modified',

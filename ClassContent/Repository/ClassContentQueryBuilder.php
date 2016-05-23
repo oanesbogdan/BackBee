@@ -108,6 +108,16 @@ class ClassContentQueryBuilder extends QueryBuilder
     }
 
     /**
+     * Exclude content from deleted pages
+     */
+    public function excludeDeletedPages()
+    {
+        $this->leftJoin('cc._mainnode', 'mp');
+        $this->andWhere('mp._state != :deletedStatus OR cc._mainnode IS NULL')
+            ->setParameter('deletedStatus', Page::STATE_DELETED);
+    }
+
+    /**
      * Set a page to filter the query on a nested portion.
      *
      * @param  BackBee\NestedNode\Page $page
